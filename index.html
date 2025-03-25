@@ -23,21 +23,21 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Custom marker icons
-        const blueIcon = new L.Icon({
-            iconUrl: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=|20209F|ffffff',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32]
-        });
+        // Custom circle marker options
+        const createCircleMarker = (color) => {
+            return {
+                radius: 8,
+                fillColor: color,
+                color: "#ffffff",
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 1
+            };
+        };
 
-        const greenIcon = new L.Icon({
-            iconUrl: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=|008000|ffffff',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32]
-        });
-
-        // Blue marker for user's location
-        L.marker([lat, lon], { icon: blueIcon }).addTo(map)
+        // Blue circle for user's location
+        L.circleMarker([lat, lon], createCircleMarker('#20209F'))
+            .addTo(map)
             .bindPopup("<b>Reference Location</b>").openPopup();
 
         // Fetch amenities from Overpass API
@@ -48,7 +48,7 @@
             .then(data => {
                 data.elements.forEach(element => {
                     const { lat, lon, tags } = element;
-                    L.marker([lat, lon], { icon: greenIcon }).addTo(map)
+                    L.circleMarker([lat, lon], createCircleMarker('#008000')).addTo(map)
                     .bindPopup(`<b>${tags.name || "Unnamed"}</b>`);
                 });
             })
@@ -56,4 +56,3 @@
     </script>
 </body>
 </html>
-

@@ -23,21 +23,17 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Custom marker icons
-        const blueIcon = new L.Icon({
-            iconUrl: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=|20209F|ffffff',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32]
+        // Custom marker icons using Leaflet's DivIcon
+        const createMarkerIcon = (color) => L.divIcon({
+            className: 'custom-icon',
+            html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff;"></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
         });
 
-        const greenIcon = new L.Icon({
-            iconUrl: 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=|008000|ffffff',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32]
-        });
-
-        // Blue marker for user's location
-        L.marker([lat, lon], { icon: blueIcon }).addTo(map)
+        // Blue marker for reference location
+        L.marker([lat, lon], { icon: createMarkerIcon('#20209F') })
+            .addTo(map)
             .bindPopup("<b>Reference Location</b>").openPopup();
 
         // Fetch amenities from Overpass API
@@ -46,13 +42,26 @@
         fetch(overpassUrl)
             .then(response => response.json())
             .then(data => {
+                if (data.elements.length === 0) {
+                    alert(`No amenities found for "${amenity}" within ${radius} meters.`);
+                    return;
+                }
+
                 data.elements.forEach(element => {
                     const { lat, lon, tags } = element;
-                    L.marker([lat, lon], { icon: greenIcon }).addTo(map)
-                    .bindPopup(`<b>${tags.name || "Unnamed"}</b>`);
+                    L.marker([lat, lon], { icon: createMarkerIcon('#008000') })
+                        .addTo(map)
+                        .bindPopup(`<b>${tags.name || "Unnamed Location"}</b>`);
                 });
+
+                const bounds = data.elements.map(element => [element.lat, element.lon]);
+                bounds.push([lat, lon]);
+                map.fitBounds(bounds);
             })
-            .catch(err => console.error('Error fetching data:', err));
+            .catch(err => {
+                console.error('Error fetching data:', err);
+                alert("Error fetching data from Overpass API. Please try again later.");
+            });
     </script>
 </body>
 </html>

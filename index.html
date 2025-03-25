@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Medical Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+    <div id="map" style="height: 100vh;"></div>
+    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Get URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const amenity = params.get('amenity') || 'hospital';
+        const lat = parseFloat(params.get('lat')) || 40.7128;
+        const lon = parseFloat(params.get('lon')) || -74.0060;
+        const radius = parseInt(params.get('radius')) || 1000;
+
+        // Initialize the map
+        const map = L.map('map').setView([lat, lon], 14);
+
+        // Add OpenStreetMap layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        // Fetch data from Overpass API
+        const query = `
+            [out:json];
+            node["amenity"="${amenity}"](around:${radius},${lat},${lon});
+            out;
+        `;
+        const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                data.elements.forEach(element => {
+                    L.marker([element.lat, element.lon])
+                        .addTo(map)
+                        .bindPopup(element.tags.name || 'Unnamed Location');
+                });
+            })
+            .catch(console.error);
+    </script>
+</body>
+</html>

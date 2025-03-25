@@ -58,7 +58,7 @@
                     bounds.extend([lat, lon]);
                 });
 
-                map.fitBounds(bounds, { padding: [20, 20] });
+                map.fitBounds(bounds, { padding: [20, 20], maxZoom: map.getZoom() });
             })
             .catch(err => console.error('Error fetching data:', err));
     </script>

@@ -23,17 +23,23 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Custom marker icons using Leaflet's DivIcon
-        const createMarkerIcon = (color) => L.divIcon({
-            className: 'custom-icon',
-            html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff;"></div>`,
-            iconSize: [20, 20],
-            iconAnchor: [10, 10]
+        // Custom marker icons
+        const blueIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41]
         });
 
-        // Blue marker for reference location
-        L.marker([lat, lon], { icon: createMarkerIcon('#20209F') })
-            .addTo(map)
+        const greenIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41]
+        });
+
+        // Blue marker for user's location
+        L.marker([lat, lon], { icon: blueIcon }).addTo(map)
             .bindPopup("<b>Reference Location</b>").openPopup();
 
         // Fetch amenities from Overpass API
@@ -42,26 +48,13 @@
         fetch(overpassUrl)
             .then(response => response.json())
             .then(data => {
-                if (data.elements.length === 0) {
-                    alert(`No amenities found for "${amenity}" within ${radius} meters.`);
-                    return;
-                }
-
                 data.elements.forEach(element => {
                     const { lat, lon, tags } = element;
-                    L.marker([lat, lon], { icon: createMarkerIcon('#008000') })
-                        .addTo(map)
-                        .bindPopup(`<b>${tags.name || "Unnamed Location"}</b>`);
+                    L.marker([lat, lon], { icon: greenIcon }).addTo(map)
+                    .bindPopup(`<b>${tags.name || "Unnamed"}</b>`);
                 });
-
-                const bounds = data.elements.map(element => [element.lat, element.lon]);
-                bounds.push([lat, lon]);
-                map.fitBounds(bounds);
             })
-            .catch(err => {
-                console.error('Error fetching data:', err);
-                alert("Error fetching data from Overpass API. Please try again later.");
-            });
+            .catch(err => console.error('Error fetching data:', err));
     </script>
 </body>
 </html>

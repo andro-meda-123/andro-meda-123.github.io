@@ -30,12 +30,6 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        L.control.scale().addTo(map);
-        L.control.compass = function(opts) {
-            return new L.Control.Compass(opts);
-        };
-        L.control.compass({ position: 'topright' }).addTo(map);
-
         const bounds = L.latLngBounds();
 
         const createCircleMarker = (color) => ({

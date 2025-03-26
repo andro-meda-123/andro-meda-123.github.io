@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Map with Amenities</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-rotatedmarker/leaflet.rotatedMarker.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-rotatedmarker/leaflet.rotatedMarker.js"></script>
 </head>
 <body>
     <div id="map" style="height: 100vh;"></div>
@@ -18,17 +20,21 @@
         const radius = parseInt(urlParams.get('radius'));
 
         const map = L.map('map', {
-            minZoom: 3,
+            minZoom: 2,
             maxBounds: [
                 [-90, -180], // Southwest corner (bottom-left)
                 [90, 180]    // Northeast corner (top-right)
             ],
-            maxBoundsViscosity: 1.0
+            maxBoundsViscosity: 1.0,
+            rotate: true
         }).setView([lat, lon], 15);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+        L.control.scale().addTo(map);
+        L.control({ position: 'topright' }).addTo(map); // Compass control placeholder
 
         const bounds = L.latLngBounds();
 

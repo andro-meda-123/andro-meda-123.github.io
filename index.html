@@ -60,7 +60,7 @@
 
                 map.fitBounds(bounds, { padding: [20, 20] });
                 const minZoom = map.getZoom();
-                map.setMinZoom(minZoom);
+                map.setMinZoom((minZoom)-1);
             })
             .catch(err => console.error('Error fetching data:', err));
     </script>

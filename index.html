@@ -49,7 +49,7 @@
                 data.elements.forEach(element => {
                     const { lat, lon, tags } = element;
                     const amenityName = tags.name || "Unnamed";
-                    const address = tags["addr:street"] ? tags["addr:street"] : "Address not available";
+                    const address = tags["addr:full"] ? tags["addr:full"] : "Address not available";
 
                     L.circleMarker([lat, lon], createCircleMarker('#008000'))
                         .addTo(map)

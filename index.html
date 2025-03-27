@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map with Amenities</title>
+    <title>Map with Amenities and Shops</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
@@ -13,6 +13,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const amenity = urlParams.get('amenity');
+        const shop = urlParams.get('shop');
         const lat = parseFloat(urlParams.get('lat'));
         const lon = parseFloat(urlParams.get('lon'));
         const radius = parseInt(urlParams.get('radius'));
@@ -54,26 +55,33 @@
 
         bounds.extend([lat, lon]);
 
-        const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node["amenity"="${amenity}"](around:${radius},${lat},${lon});out;`;
+        const fetchData = (type, value, color) => {
+            if (value) {
+                const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node["${type}"="${value}"](around:${radius},${lat},${lon});out;`;
 
-        fetch(overpassUrl)
-            .then(response => response.json())
-            .then(data => {
-                data.elements.forEach(element => {
-                    const { lat, lon, tags } = element;
-                    const amenityName = tags["name:en"] || tags.name || tags.operator || tags.brand || "";
-                    const address = tags["addr:full"] || tags["addr:housename"] || tags["addr:street"] || "";
+                fetch(overpassUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.elements.forEach(element => {
+                            const { lat, lon, tags } = element;
+                            const name = tags["name:en"] || tags.name || tags.operator || tags.brand || "";
+                            const address = tags["addr:full"] || tags["addr:housename"] || tags["addr:street"] || "";
 
-                    L.circleMarker([lat, lon], createCircleMarker('#008000'))
-                        .addTo(map)
-                        .bindPopup(`<b>${amenityName}</b><br>${address}`);
+                            L.circleMarker([lat, lon], createCircleMarker(color))
+                                .addTo(map)
+                                .bindPopup(`<b>${name}</b><br>${address}`);
 
-                    bounds.extend([lat, lon]);
-                });
+                            bounds.extend([lat, lon]);
+                        });
 
-                map.fitBounds(bounds, { padding: [20, 20] });
-            })
-            .catch(err => console.error('Error fetching data:', err));
+                        map.fitBounds(bounds, { padding: [20, 20] });
+                    })
+                    .catch(err => console.error(`Error fetching ${type} data:`, err));
+            }
+        };
+
+        fetchData("amenity", amenity, '#008000');
+        fetchData("shop", shop, '#FFA500');
     </script>
 </body>
 </html>

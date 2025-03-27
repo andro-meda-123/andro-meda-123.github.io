@@ -61,7 +61,7 @@
             .then(data => {
                 data.elements.forEach(element => {
                     const { lat, lon, tags } = element;
-                    const amenityName = tags.name:en || tags.name || tags.operator || tags.brand || "";
+                    const amenityName = tags["name:en"] || tags.name || tags.operator || tags.brand || "";
                     const address = tags["addr:full"] || tags["addr:housename"] || tags["addr:street"] || "";
 
                     L.circleMarker([lat, lon], createCircleMarker('#008000'))

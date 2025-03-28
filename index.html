@@ -39,23 +39,25 @@
 
         const bounds = L.latLngBounds();
 
-        const createCircleMarker = (color) => ({
+        const createCircleMarker = () => ({
             radius: 10,
-            fillColor: color,
+            fillColor: '#008000',
             color: "#ffffff",
             weight: 2,
             opacity: 1,
             fillOpacity: 1
         });
 
-        L.circleMarker([lat, lon], createCircleMarker('#20209F'))
+        L.circleMarker([lat, lon], createCircleMarker())
             .addTo(map)
             .bindPopup("<b>Reference Location</b>")
             .openPopup();
 
         bounds.extend([lat, lon]);
 
-        const fetchData = (type, value, color) => {
+        const initialView = map.getBounds();
+
+        const fetchData = (type, value) => {
             if (value) {
                 const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node["${type}"="${value}"](around:${radius},${lat},${lon});out;`;
 
@@ -67,7 +69,7 @@
                             const name = tags["name:en"] || tags.name || tags.operator || tags.brand || "";
                             const address = tags["addr:full"] || tags["addr:housename"] || tags["addr:street"] || "";
 
-                            L.circleMarker([lat, lon], createCircleMarker(color))
+                            L.circleMarker([lat, lon], createCircleMarker())
                                 .addTo(map)
                                 .bindPopup(`<b>${name}</b><br>${address}`);
 
@@ -80,8 +82,17 @@
             }
         };
 
-        fetchData("amenity", amenity, '#008000');
-        fetchData("shop", shop, '#008000');
+        fetchData("amenity", amenity);
+        fetchData("shop", shop);
+
+        L.control({ position: 'topright' }).onAdd = function () {
+            const container = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom');
+            container.innerHTML = 'Reset View';
+            container.style.backgroundColor = 'white';
+            container.style.cursor = 'pointer';
+            container.onclick = () => map.fitBounds(initialView, { padding: [20, 20] });
+            return container;
+        }.addTo(map);
     </script>
 </body>
 </html>

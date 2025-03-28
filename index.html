@@ -39,25 +39,23 @@
 
         const bounds = L.latLngBounds();
 
-        const createCircleMarker = () => ({
+        const createCircleMarker = (color) => ({
             radius: 10,
-            fillColor: '#008000',
+            fillColor: color,
             color: "#ffffff",
             weight: 2,
             opacity: 1,
             fillOpacity: 1
         });
 
-        L.circleMarker([lat, lon], createCircleMarker())
+        L.circleMarker([lat, lon], createCircleMarker('#20209F'))
             .addTo(map)
             .bindPopup("<b>Reference Location</b>")
             .openPopup();
 
         bounds.extend([lat, lon]);
 
-        const initialView = map.getBounds();
-
-        const fetchData = (type, value) => {
+        const fetchData = (type, value, color) => {
             if (value) {
                 const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node["${type}"="${value}"](around:${radius},${lat},${lon});out;`;
 
@@ -69,7 +67,7 @@
                             const name = tags["name:en"] || tags.name || tags.operator || tags.brand || "";
                             const address = tags["addr:full"] || tags["addr:housename"] || tags["addr:street"] || "";
 
-                            L.circleMarker([lat, lon], createCircleMarker())
+                            L.circleMarker([lat, lon], createCircleMarker(color))
                                 .addTo(map)
                                 .bindPopup(`<b>${name}</b><br>${address}`);
 
@@ -82,17 +80,8 @@
             }
         };
 
-        fetchData("amenity", amenity);
-        fetchData("shop", shop);
-
-        L.control({ position: 'topright' }).onAdd = function () {
-            const container = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom');
-            container.innerHTML = 'Reset View';
-            container.style.backgroundColor = 'white';
-            container.style.cursor = 'pointer';
-            container.onclick = () => map.fitBounds(initialView, { padding: [20, 20] });
-            return container;
-        }.addTo(map);
+        fetchData("amenity", amenity, '#008000');
+        fetchData("shop", shop, '#008000');
     </script>
 </body>
 </html>

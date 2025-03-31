@@ -1,0 +1,101 @@
+<!DOCTYPE html>  
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map with Amenities and Shops</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <div id="map" style="height: 100vh;"></div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const amenity = urlParams.get('amenity');
+        const shop = urlParams.get('shop');
+        const lat = parseFloat(urlParams.get('lat'));
+        const lon = parseFloat(urlParams.get('lon'));
+        const radius = parseInt(urlParams.get('radius'));
+
+        const map = L.map('map', {
+            minZoom: 2,
+            maxBounds: [
+                [-90, -180],
+                [90, 180]
+            ],
+            maxBoundsViscosity: 1.0
+        }).setView([lat, lon], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        L.control.scale({
+            metric: true,
+            imperial: true,
+            maxWidth: 200
+        }).addTo(map);
+
+        const bounds = L.latLngBounds();
+
+        const createCircleMarker = (color) => ({
+            radius: 10,
+            fillColor: color,
+            color: "#ffffff",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 1
+        });
+
+        L.circleMarker([lat, lon], createCircleMarker('#20209F'))
+            .addTo(map)
+            .bindPopup("<b>Reference Location</b>")
+            .openPopup();
+
+        bounds.extend([lat, lon]);
+
+        const fetchNominatimData = (lat, lon) => {
+            return fetch(https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1)
+                .then(response => response.json())
+                .then(data => {
+                    return {
+                        name: data.name || "Unknown Name",
+                        display_name: data.display_name || "Unknown Address"
+                    };
+                })
+                .catch(err => {
+                    console.error('Error fetching Nominatim data:', err);
+                    return { name: "Unknown", display_name: "Unknown" };
+                });
+        };
+
+        const fetchData = (type, value, color) => {
+            if (value) {
+                const overpassUrl = https://overpass-api.de/api/interpreter?data=[out:json];node["${type}"="${value}"](around:${radius},${lat},${lon});out;;
+
+                fetch(overpassUrl)
+                    .then(response => response.json())
+                    .then(async (data) => {
+                        for (const element of data.elements) {
+                            const { lat, lon } = element;
+                            const placeData = await fetchNominatimData(lat, lon);
+
+                            L.circleMarker([lat, lon], createCircleMarker(color))
+                                .addTo(map)
+                                .bindPopup(<b>${placeData.name}</b><br>${placeData.display_name});
+
+                            bounds.extend([lat, lon]);
+                        }
+
+                        map.fitBounds(bounds, { padding: [20, 20] });
+                    })
+                    .catch(err => console.error(Error fetching ${type} data:, err));
+            }
+        };
+
+        fetchData("amenity", amenity, '#008000');
+        fetchData("shop", shop, '#008000');
+    </script>
+</body>
+</html>
